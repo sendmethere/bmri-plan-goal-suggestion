@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Props {
   open: boolean;
@@ -85,7 +84,7 @@ export function GuideModal({ open, onOpenChange }: Props) {
           <p className="text-xs text-muted-foreground">학습 플래너의 주요 기능과 사용 방법</p>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 px-5 pb-5">
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5">
           <div className="space-y-5 pt-1">
             {sections.map((sec) => (
               <div key={sec.title}>
@@ -121,7 +120,7 @@ export function GuideModal({ open, onOpenChange }: Props) {
               </div>
             ))}
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
