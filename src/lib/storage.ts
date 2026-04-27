@@ -40,7 +40,7 @@ export function getTokenLogs(): TokenLog[] {
 export function addTokenLog(log: Omit<TokenLog, 'id'>): void {
   const logs = getTokenLogs();
   logs.unshift({ ...log, id: Date.now().toString() });
-  localStorage.setItem(`${PREFIX}token_logs`, JSON.stringify(logs.slice(0, 200)));
+  localStorage.setItem(`${PREFIX}token_logs`, JSON.stringify(logs.slice(0, 50)));
 }
 
 export function clearTokenLogs(): void {
