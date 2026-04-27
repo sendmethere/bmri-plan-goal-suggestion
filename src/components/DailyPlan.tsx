@@ -65,6 +65,7 @@ export function DailyPlan({ onDataChange, currentWeekGoal }: Props) {
           onSubmit={(text) => addTask(text, day)}
           currentWeekGoal={currentWeekGoal}
           selectedDay={day}
+          showSubmitButton
         />
         {tasks.length === 0 ? (
           <p className="py-3 text-center text-xs text-muted-foreground">계획을 추가해보세요!</p>
