@@ -118,26 +118,19 @@ export function DailyPlan({ onDataChange, currentWeekGoal }: Props) {
           <div className="flex-1" />
         )}
 
-        <div className="flex shrink-0 gap-0.5">
-          <Button
-            variant={viewMode === 'day' ? 'secondary' : 'ghost'}
-            size="icon"
-            className="h-7 w-7"
-            title="일별보기"
-            onClick={() => setViewMode('day')}
-          >
-            <LayoutList className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant={viewMode === 'week' ? 'secondary' : 'ghost'}
-            size="icon"
-            className="h-7 w-7"
-            title="주간보기"
-            onClick={() => setViewMode('week')}
-          >
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0"
+          title={viewMode === 'day' ? '주간보기' : '일별보기'}
+          onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
+        >
+          {viewMode === 'day' ? (
             <AlignJustify className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+          ) : (
+            <LayoutList className="h-3.5 w-3.5" />
+          )}
+        </Button>
       </div>
 
       {viewMode === 'day' ? (
