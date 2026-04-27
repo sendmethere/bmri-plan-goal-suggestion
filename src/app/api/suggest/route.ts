@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: NextRequest) {
-  const { currentInput, type, lastWeekData, currentWeekGoal } = await req.json();
+  const { currentInput, type, lastWeekData, currentWeekGoal, previousDaysTasks } = await req.json();
 
   const isGoal = type === 'goal';
 
@@ -25,26 +25,28 @@ export async function POST(req: NextRequest) {
 반드시 아래 JSON 형식으로만 응답하세요:
 {"suggestions": ["제안1", "제안2", "제안3"]}`;
   } else {
-    const lastTasks = Object.values(lastWeekData?.tasks ?? {})
-      .flat()
-      .map((t: unknown) => (t as { text: string }).text)
-      .join(', ') || '없음';
-    const goalLine = currentWeekGoal
-      ? `이번 주 목표: "${currentWeekGoal}" ← 이 목표와 직접 연결되는 오늘의 실천 항목을 최우선으로 제안하세요.`
-      : '이번 주 목표: 없음';
-    prompt = `${goalLine}
-지난주 계획 참고: ${lastTasks}
+    const prevDaysLine = (previousDaysTasks as string[] ?? []).length > 0
+      ? `이전 날 계획 (참고용): ${(previousDaysTasks as string[]).join(', ')}\n← 이 계획들을 그대로 유지하거나 양이나 범위를 약간 늘리는 방향으로 제안하세요.`
+      : (() => {
+          const lastTasks = Object.values(lastWeekData?.tasks ?? {})
+            .flat()
+            .map((t: unknown) => (t as { text: string }).text)
+            .join(', ') || '없음';
+          return `지난주 계획 참고: ${lastTasks}`;
+        })();
+    prompt = `이번 주 목표: "${currentWeekGoal}" ← 이 목표와 직접 연결되는 오늘의 실천 항목을 최우선으로 제안하세요.
+${prevDaysLine}
 현재 입력: "${currentInput || ''}"
 
 초등/중학생을 위한 오늘의 학습 계획 3가지를 제안해주세요.
 규칙:
 - 반드시 "~하기" 형식으로 끝나는 짧은 문장으로 작성하세요 (예: "수학 교과서 50~55쪽 풀기", "영어 단어 10개 외우기")
 - 초등~중학생이 혼자서도 바로 실천할 수 있는 구체적인 행동이어야 합니다
-- 이번 주 목표가 있으면 그 목표와 직접 연결되는 항목을 최우선으로 제안하세요
-- 제안1: 5~10분 내 완료 가능한 가장 쉽고 단순한 행동 (예: 단어 5개 보기)
-- 제안2: 15~20분 소요되는 보통 난이도 행동 (예: 교과서 한 단원 읽기)
-- 제안3: 25~30분 이상 집중이 필요한 도전적인 행동 (예: 문제 풀고 오답 정리하기)
-- 3개의 소요 시간과 난이도가 명확히 차이 나야 합니다
+- 이번 주 목표와 직접 연결되는 항목을 최우선으로 제안하세요
+- 이전 날 계획이 있다면 그 수준을 유지하거나 조금씩 더 나아가는 방향으로 제안하세요 (급격한 변화 금지)
+- 제안1: 가장 쉽고 단순한 행동 (이전 날 가장 쉬운 항목과 비슷하거나 조금 더)
+- 제안2: 보통 난이도 행동 (이전 날 중간 항목과 비슷하거나 조금 더)
+- 제안3: 도전적인 행동 (이전 날 어려운 항목과 비슷하거나 조금 더)
 반드시 아래 JSON 형식으로만 응답하세요:
 {"suggestions": ["제안1", "제안2", "제안3"]}`;
   }

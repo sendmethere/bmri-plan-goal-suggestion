@@ -81,6 +81,7 @@ export function DailyPlan({ onDataChange }: Props) {
         type="task"
         onSubmit={addTask}
         currentWeekGoal={weekData.goals[0]?.text}
+        selectedDay={selectedDay}
       />
 
       {tasks.length === 0 ? (

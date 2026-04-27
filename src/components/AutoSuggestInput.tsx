@@ -14,9 +14,10 @@ interface Props {
   disabled?: boolean;
   showSubmitButton?: boolean;
   currentWeekGoal?: string;
+  selectedDay?: number;
 }
 
-export function AutoSuggestInput({ placeholder, type, onSubmit, disabled, showSubmitButton, currentWeekGoal }: Props) {
+export function AutoSuggestInput({ placeholder, type, onSubmit, disabled, showSubmitButton, currentWeekGoal, selectedDay }: Props) {
   const [value, setValue] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -27,6 +28,9 @@ export function AutoSuggestInput({ placeholder, type, onSubmit, disabled, showSu
   const lastFetchRef = useRef<string>('');
 
   const fetchSuggestions = useCallback(async (currentValue: string) => {
+    // 계획 자동완성은 이번 주 목표가 없으면 실행하지 않음
+    if (type === 'task' && !currentWeekGoal) return;
+
     const cacheKey = `${type}:${currentValue}`;
     if (cacheKey === lastFetchRef.current && suggestions.length > 0) return;
     lastFetchRef.current = cacheKey;
@@ -34,12 +38,23 @@ export function AutoSuggestInput({ placeholder, type, onSubmit, disabled, showSu
     const lastWeekKey = getWeekKey(-1);
     const lastWeekData: WeekData = getWeekData(lastWeekKey);
 
+    // 전날, 전전날 계획 가져오기
+    let previousDaysTasks: string[] = [];
+    if (type === 'task' && selectedDay !== undefined) {
+      const currentWeekData: WeekData = getWeekData(getWeekKey(0));
+      [selectedDay - 1, selectedDay - 2]
+        .filter((d) => d >= 0)
+        .forEach((d) => {
+          (currentWeekData.tasks[d] ?? []).forEach((t) => previousDaysTasks.push(t.text));
+        });
+    }
+
     setLoading(true);
     try {
       const res = await fetch('/api/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentInput: currentValue, type, lastWeekData, currentWeekGoal }),
+        body: JSON.stringify({ currentInput: currentValue, type, lastWeekData, currentWeekGoal, previousDaysTasks }),
       });
       const data = await res.json();
       setSuggestions(data.suggestions ?? []);
@@ -61,7 +76,7 @@ export function AutoSuggestInput({ placeholder, type, onSubmit, disabled, showSu
     } finally {
       setLoading(false);
     }
-  }, [type, suggestions.length, currentWeekGoal]);
+  }, [type, suggestions.length, currentWeekGoal, selectedDay]);
 
   const scheduleOrFetch = useCallback((val: string) => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -167,12 +182,13 @@ export function AutoSuggestInput({ placeholder, type, onSubmit, disabled, showSu
                 setSuggestions([]);
                 inputRef.current?.focus();
               }}
-              className={`rounded px-2 py-1.5 text-left text-xs transition-colors ${
-                i === selectedIdx
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+              className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors bg-muted text-muted-foreground hover:bg-muted/80"
             >
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full border border-primary ${
+                  i === selectedIdx ? 'bg-primary' : ''
+                }`}
+              />
               {s}
             </button>
           ))}
