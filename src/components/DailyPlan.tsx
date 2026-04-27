@@ -17,9 +17,10 @@ function getTodayIndex(): number {
 
 interface Props {
   onDataChange: () => void;
+  currentWeekGoal?: string;
 }
 
-export function DailyPlan({ onDataChange }: Props) {
+export function DailyPlan({ onDataChange, currentWeekGoal }: Props) {
   const [weekData, setWeekData] = useState<WeekData>({ goals: [], tasks: {} });
   const [selectedDay, setSelectedDay] = useState(getTodayIndex());
   const weekKey = getWeekKey(0);
@@ -80,7 +81,7 @@ export function DailyPlan({ onDataChange }: Props) {
         placeholder={`${DAYS[selectedDay]}요일 계획을 입력하세요...`}
         type="task"
         onSubmit={addTask}
-        currentWeekGoal={weekData.goals[0]?.text}
+        currentWeekGoal={currentWeekGoal}
         selectedDay={selectedDay}
       />
 

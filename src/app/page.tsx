@@ -70,7 +70,7 @@ export default function Home() {
           {/* 일별 계획 */}
           <section>
             <p className="text-xs font-medium text-muted-foreground mb-2">일별 계획</p>
-            <DailyPlan onDataChange={handleDataChange} />
+            <DailyPlan onDataChange={handleDataChange} currentWeekGoal={weekData.goals[0]?.text} />
           </section>
 
           <Separator />
