@@ -31,28 +31,30 @@ export function DailyPlan({ onDataChange, currentWeekGoal }: Props) {
     setWeekData(getWeekData(weekKey));
   }, [weekKey]);
 
-  const save = (data: WeekData) => {
-    setWeekData(data);
-    saveWeekData(weekKey, data);
+  const save = (tasks: Record<number, DailyTask[]>) => {
+    const fresh = getWeekData(weekKey);
+    const updated = { ...fresh, tasks };
+    setWeekData(updated);
+    saveWeekData(weekKey, updated);
     onDataChange();
   };
 
   const addTask = (text: string, day: number) => {
     const dayTasks = weekData.tasks[day] ?? [];
     const task: DailyTask = { id: Date.now().toString(), text, completed: false, day };
-    save({ ...weekData, tasks: { ...weekData.tasks, [day]: [...dayTasks, task] } });
+    save({ ...weekData.tasks, [day]: [...dayTasks, task] });
   };
 
   const toggleTask = (id: string, day: number) => {
     const dayTasks = (weekData.tasks[day] ?? []).map((t) =>
       t.id === id ? { ...t, completed: !t.completed } : t
     );
-    save({ ...weekData, tasks: { ...weekData.tasks, [day]: dayTasks } });
+    save({ ...weekData.tasks, [day]: dayTasks });
   };
 
   const deleteTask = (id: string, day: number) => {
     const dayTasks = (weekData.tasks[day] ?? []).filter((t) => t.id !== id);
-    save({ ...weekData, tasks: { ...weekData.tasks, [day]: dayTasks } });
+    save({ ...weekData.tasks, [day]: dayTasks });
   };
 
   const renderDayContent = (day: number) => {

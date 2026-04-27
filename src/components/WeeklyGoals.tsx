@@ -20,27 +20,26 @@ export function WeeklyGoals({ onDataChange }: Props) {
     setWeekData(getWeekData(weekKey));
   }, [weekKey]);
 
-  const save = (data: WeekData) => {
-    setWeekData(data);
-    saveWeekData(weekKey, data);
+  const save = (goals: Goal[]) => {
+    const fresh = getWeekData(weekKey);
+    const updated = { ...fresh, goals };
+    setWeekData(updated);
+    saveWeekData(weekKey, updated);
     onDataChange();
   };
 
   const addGoal = (text: string) => {
     if (weekData.goals.length >= 1) return;
     const goal: Goal = { id: Date.now().toString(), text, completed: false };
-    save({ ...weekData, goals: [goal] });
+    save([goal]);
   };
 
   const toggleGoal = (id: string) => {
-    save({
-      ...weekData,
-      goals: weekData.goals.map((g) => (g.id === id ? { ...g, completed: !g.completed } : g)),
-    });
+    save(weekData.goals.map((g) => (g.id === id ? { ...g, completed: !g.completed } : g)));
   };
 
   const deleteGoal = (id: string) => {
-    save({ ...weekData, goals: weekData.goals.filter((g) => g.id !== id) });
+    save(weekData.goals.filter((g) => g.id !== id));
   };
 
   const hasGoal = weekData.goals.length >= 1;
